@@ -1,43 +1,22 @@
 <script setup>
-import { ref } from "vue";
-
+import { onMounted, ref } from "vue";
+import axios from "axios";
 import "moment/dist/locale/th";
 import moment from "moment";
 
 const isOn = ref(false);
 
+const data = ref();
+const modal = ref(false);
+const currentDay = ref();
+const currentTemp = ref(0);
+const listTIme = ref();
 const columns = [
   {
-    name: "no",
-    required: true,
-    label: "ลำดับ",
+    name: "date",
     align: "left",
-    sortable: true,
-  },
-  {
-    name: "name",
-    required: true,
-    label: "ชื่อ",
-    align: "left",
-    field: (row) => row.name,
-    format: (val) => `${val}`,
-    sortable: true,
-  },
-  {
-    name: "dateStart",
-    align: "left",
-    label: "วัน/เดือน/ปีที่เริ่ม",
-    field: (row) => row.dateStart,
-    format(val) {
-      return date2Thai(val);
-    },
-    sortable: true,
-  },
-  {
-    name: "dateEnd",
-    align: "left",
-    label: "วัน/เดือน/ปีที่จบ",
-    field: "dateEnd",
+    label: "วัน/เดือน/ปี",
+    field: "date",
     sortable: true,
   },
   {
@@ -92,65 +71,93 @@ const rows = [
   },
 ];
 
-function date2Thai(srcDate) {
+function date2Thai(srcDate, fullmonth = false, time = false) {
   if (srcDate == null || !moment(srcDate).isValid()) return "";
 
   const dateMoment = moment(srcDate);
   const day = dateMoment.format("DD");
-  const month = dateMoment.format("MMM");
+  const month = dateMoment.format(fullmonth ? "MMMM" : "MMM");
   const year = +dateMoment.format("YYYY") + 543;
   return `${day} ${month} ${year}`;
 }
+
+async function getData() {
+  const res = await axios.get(
+    "https://limitedcocoa-default-rtdb.firebaseio.com/.json"
+  );
+  data.value = Object.entries(res.data).map((v) => ({
+    date: new Date(v[0]).toDateString(),
+    data: Object.entries(v[1]),
+  }));
+  console.log(data.value);
+  currentDay.value = data.value[data.value.length - 1];
+  const fulldayTemp = Object.entries(currentDay.value.data).map((v) => ({
+    time: v[0],
+    temp: v[1],
+  }));
+  currentTemp.value = fulldayTemp[fulldayTemp.length - 1].temp[1];
+  return res.data;
+}
+
+onMounted(async () => {
+  data.value = await getData();
+});
 </script>
 
 <template>
   <div class="text-h2 q-mb-lg q-ml-md">เครื่องมหาเทพ</div>
-  <div class="row full-width q-gutter-lg">
-    <q-card class="my-card col flex items-center justify-center">
-      <div class="text-center">
-        <h3>Complete Project</h3>
-        <h3>7</h3>
-      </div>
-    </q-card>
-    <q-card class="my-card col flex items-center justify-center">
-      <div class="text-center">
-        <h3>Current Temp</h3>
-        <h3>37.5 °C</h3>
-      </div>
-    </q-card>
-    <div class="my-card col row items-center justify-center">
-      <div class="q-mr-md text-h6">Status :</div>
-      <div class="flex justify-center items-center text-subtitle1">
-        Off
-        <q-toggle v-model="isOn" class="q-mr-sm" />
-        On
-      </div>
-    </div>
-  </div>
 
-  <div class="q-pa-lg q-mt-lg">
-    <q-table title="ตารางเทพ" :rows="rows" :columns="columns" row-key="name">
-      <template v-slot:body="props">
-        <q-tr :props="props" class="cursor-pointer">
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            <div v-if="col.name === 'no'">{{ props.rowIndex + 1 }}</div>
-            <div v-else-if="col.name === 'dateStart'">
-              {{ date2Thai(props.row.dateStart) }}
-            </div>
-            <div v-else-if="col.name === 'dateEnd'">
-              {{ date2Thai(props.row.dateEnd) }}
-            </div>
-            <div v-else-if="col.name === 'detail'">
-              <q-btn flat round color="grey" icon="zoom_in" />
-            </div>
-            <div v-else>
-              {{ props.row.name }}
-            </div>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
-  </div>
+  <q-card class="my-card flex items-center justify-center q-ma-">
+    <div class="text-center">
+      <h3>อุณหภูมิปัจจุบัน</h3>
+      <h3>{{ currentTemp }} °C</h3>
+    </div>
+  </q-card>
+
+  <q-list bordered separator class="q-mt-lg bg-white">
+    <q-item
+      v-for="(v, i) in data"
+      class="q-py-none outlined"
+      clickable
+      @click="
+        () => {
+          modal = true;
+          listTime = {
+            date: date2Thai(i, true),
+            data: Object.entries(v),
+          };
+        }
+      "
+      v-ripple
+    >
+      <q-item-section>{{ date2Thai(i, true) }}</q-item-section>
+      <q-item-section avatar>
+        <q-icon flat round color="grey" name="zoom_in" />
+      </q-item-section>
+    </q-item>
+  </q-list>
+
+  <q-dialog v-model="modal">
+    <q-card style="min-width: 80vw">
+      <q-toolbar>
+        <q-toolbar-title>วันที่ {{ listTime.date }}</q-toolbar-title>
+        <q-btn flat round dense icon="close" v-close-popup />
+      </q-toolbar>
+
+      <q-list bordered separator class="q-mt-lg bg-white">
+        <q-item class="row">
+          <div class="col-6">เวลา</div>
+          <div class="col-6">อุณหภูมิ</div>
+        </q-item>
+        <div class="scroll" style="height: 80vh">
+          <q-item v-for="v in listTime.data" class="row">
+            <div class="col-6">{{ v[0] }}</div>
+            <div class="col-6">{{ v[1] }} °C</div>
+          </q-item>
+        </div>
+      </q-list>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>

@@ -24,7 +24,10 @@ import MainPage from "./components/MainPage.vue";
   filter: drop-shadow(0 0 2em #42b883aa);
 }
 
-* {
+html,
+body,
+#app {
   background-color: #f8f4f4;
+  min-height: 100%;
 }
 </style>
