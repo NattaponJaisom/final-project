@@ -4,72 +4,12 @@ import axios from "axios";
 import "moment/dist/locale/th";
 import moment from "moment";
 
-const isOn = ref(false);
-
 const data = ref();
 const modal = ref(false);
 const currentDay = ref();
 const currentTemp = ref(0);
-const listTIme = ref();
-const columns = [
-  {
-    name: "date",
-    align: "left",
-    label: "วัน/เดือน/ปี",
-    field: "date",
-    sortable: true,
-  },
-  {
-    name: "detail",
-    align: "center",
-    label: "ดูรายละเอียด",
-    field: "detail",
-    sortable: true,
-  },
-];
-
-const rows = [
-  {
-    name: "test",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test4",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test5",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test6",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test5",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test6",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test5",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-  {
-    name: "test6",
-    dateStart: new Date(),
-    dateEnd: new Date(),
-  },
-];
+const listTime = ref();
+const avgTemp = ref();
 
 function date2Thai(srcDate, fullmonth = false, time = false) {
   if (srcDate == null || !moment(srcDate).isValid()) return "";
@@ -105,16 +45,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="text-h2 q-mb-lg q-ml-md">เครื่องมหาเทพ</div>
+  <div class="text-h4 q-mb-lg q-ml-md">ระบบหมักโกโก้ด้วยระบบสมองกลฝังตัว</div>
 
-  <q-card class="my-card flex items-center justify-center q-ma-">
+  <q-card class="my-card flex items-center justify-center">
     <div class="text-center">
-      <h3>อุณหภูมิปัจจุบัน</h3>
-      <h3>{{ currentTemp }} °C</h3>
+      <div class="text-h4 q-mb-md">อุณหภูมิปัจจุบัน</div>
+      <div class="text-h4">{{ currentTemp }} °C</div>
     </div>
   </q-card>
 
-  <q-list bordered separator class="q-mt-lg bg-white">
+  <q-list bordered separator class="q-mt-lg bg-white shadow-1">
     <q-item
       v-for="(v, i) in data"
       class="q-py-none outlined"
@@ -126,6 +66,9 @@ onMounted(async () => {
             date: date2Thai(i, true),
             data: Object.entries(v),
           };
+          avgTemp = 0;
+          listTime.data.forEach((v) => (avgTemp += v[1]));
+          avgTemp = avgTemp / listTime.data.length;
         }
       "
       v-ripple
@@ -139,17 +82,26 @@ onMounted(async () => {
 
   <q-dialog v-model="modal">
     <q-card style="min-width: 80vw">
-      <q-toolbar>
-        <q-toolbar-title>วันที่ {{ listTime.date }}</q-toolbar-title>
-        <q-btn flat round dense icon="close" v-close-popup />
-      </q-toolbar>
-
-      <q-list bordered separator class="q-mt-lg bg-white">
+      <div class="row justify-between q-py-sm q-px-md">
+        <div class="text-h6">
+          <div>วันที่ {{ listTime.date }}</div>
+          <div>อุณหภูมิเฉลี่ย {{ avgTemp.toFixed(1) }} °C</div>
+        </div>
+        <q-btn
+          class="absolute-top-right q-ma-sm"
+          flat
+          round
+          dense
+          icon="close"
+          v-close-popup
+        />
+      </div>
+      <q-list bordered separator class="q-mt-sm bg-white">
         <q-item class="row">
           <div class="col-6">เวลา</div>
           <div class="col-6">อุณหภูมิ</div>
         </q-item>
-        <div class="scroll" style="height: 80vh">
+        <div class="scroll" style="height: 75vh">
           <q-item v-for="v in listTime.data" class="row">
             <div class="col-6">{{ v[0] }}</div>
             <div class="col-6">{{ v[1] }} °C</div>
