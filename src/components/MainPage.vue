@@ -45,16 +45,23 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="text-h4 q-mb-lg q-ml-md">ระบบหมักโกโก้ด้วยระบบสมองกลฝังตัว</div>
+  <div class="text-h4 q-mb-lg q-ml-md text-white">
+    หมักโกโก้ด้วยระบบสมองกลฝังตัว
+  </div>
 
-  <q-card class="my-card flex items-center justify-center">
+  <q-card class="my-card flex items-center justify-center round">
     <div class="text-center">
       <div class="text-h4 q-mb-md">อุณหภูมิปัจจุบัน</div>
       <div class="text-h4">{{ currentTemp }} °C</div>
     </div>
   </q-card>
 
-  <q-list bordered separator class="q-mt-lg bg-white shadow-1">
+  <q-list
+    bordered
+    separator
+    class="q-mt-lg bg-white shadow-1 round scroll"
+    style="max-height: 30vh"
+  >
     <q-item
       v-for="(v, i) in data"
       class="q-py-none outlined"
@@ -81,8 +88,11 @@ onMounted(async () => {
   </q-list>
 
   <q-dialog v-model="modal">
-    <q-card style="min-width: 80vw">
-      <div class="row justify-between q-py-sm q-px-md">
+    <q-card style="min-width: 80vw" class="round">
+      <div
+        class="row justify-between q-py-sm q-px-md"
+        style="background-color: whitesmoke"
+      >
         <div class="text-h6">
           <div>วันที่ {{ listTime.date }}</div>
           <div>อุณหภูมิเฉลี่ย {{ avgTemp.toFixed(1) }} °C</div>
@@ -96,13 +106,17 @@ onMounted(async () => {
           v-close-popup
         />
       </div>
-      <q-list bordered separator class="q-mt-sm bg-white">
-        <q-item class="row">
+      <q-list separator class="bg-white">
+        <q-item class="row text-h6">
           <div class="col-6">เวลา</div>
           <div class="col-6">อุณหภูมิ</div>
         </q-item>
         <div class="scroll" style="height: 75vh">
-          <q-item v-for="v in listTime.data" class="row">
+          <q-item
+            v-for="(v, i) in listTime.data"
+            class="row flex items-center"
+            :style="`${i % 2 === 0 ? 'background-color: whitesmoke' : ''}`"
+          >
             <div class="col-6">{{ v[0] }}</div>
             <div class="col-6">{{ v[1] }} °C</div>
           </q-item>
@@ -114,6 +128,17 @@ onMounted(async () => {
 
 <style scoped>
 .my-card {
-  min-height: 300px;
+  min-height: 250px;
+  width: 50%;
+}
+
+.round {
+  border-radius: 15px;
+}
+
+@media (max-width: 768px) {
+  .my-card {
+    width: 100%;
+  }
 }
 </style>
