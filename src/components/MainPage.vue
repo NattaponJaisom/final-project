@@ -48,13 +48,14 @@ onMounted(async () => {
   <div class="text-h4 q-mb-lg q-ml-md text-white">
     หมักโกโก้ด้วยระบบสมองกลฝังตัว
   </div>
-
-  <q-card class="my-card flex items-center justify-center round">
-    <div class="text-center">
-      <div class="text-h4 q-mb-md">อุณหภูมิปัจจุบัน</div>
-      <div class="text-h4">{{ currentTemp }} °C</div>
-    </div>
-  </q-card>
+  <div class="flex justify-center">
+    <q-card class="my-card flex items-center justify-center round">
+      <div class="text-center">
+        <div class="text-h4 q-mb-md">อุณหภูมิปัจจุบัน</div>
+        <div class="text-h4">{{ currentTemp }} °C</div>
+      </div>
+    </q-card>
+  </div>
 
   <q-list
     bordered
