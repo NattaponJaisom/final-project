@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import axios from "axios";
 import "moment/dist/locale/th";
 import moment from "moment";
+import ChartComponent from "./ChartComponent.vue";
 
 const data = ref();
 const modal = ref(false);
@@ -29,7 +30,7 @@ async function getData() {
     date: new Date(v[0]).toDateString(),
     data: Object.entries(v[1]),
   }));
-  console.log(data.value);
+
   currentDay.value = data.value[data.value.length - 1];
   const fulldayTemp = Object.entries(currentDay.value.data).map((v) => ({
     time: v[0],
@@ -48,12 +49,15 @@ onMounted(async () => {
   <div class="text-h4 q-mb-lg q-ml-md text-white">
     หมักโกโก้ด้วยระบบสมองกลฝังตัว
   </div>
-  <div class="flex justify-center">
+  <div class="flex justify-between">
     <q-card class="my-card flex items-center justify-center round">
       <div class="text-center">
         <div class="text-h4 q-mb-md">อุณหภูมิปัจจุบัน</div>
         <div class="text-h4">{{ currentTemp }} °C</div>
       </div>
+    </q-card>
+    <q-card class="my-graph flex items-center justify-center round">
+      <ChartComponent />
     </q-card>
   </div>
 
@@ -130,7 +134,12 @@ onMounted(async () => {
 <style scoped>
 .my-card {
   min-height: 250px;
-  width: 50%;
+  width: 48%;
+}
+
+.my-graph {
+  min-height: 250px;
+  width: 48%;
 }
 
 .round {
@@ -140,6 +149,10 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .my-card {
     width: 100%;
+  }
+  .my-graph {
+    width: 100%;
+    margin-top: 24px;
   }
 }
 </style>
