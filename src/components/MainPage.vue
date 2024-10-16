@@ -30,6 +30,7 @@ async function getData() {
     date: new Date(v[0]).toDateString(),
     data: Object.entries(v[1]),
   }));
+  data.value = data.value.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   currentDay.value = data.value[data.value.length - 1];
   const fulldayTemp = Object.entries(currentDay.value.data).map((v) => ({
@@ -37,11 +38,18 @@ async function getData() {
     temp: v[1],
   }));
   currentTemp.value = fulldayTemp[fulldayTemp.length - 1].temp[1];
-  return res.data;
+
+  let sortedDates = Object.keys(data).sort((a, b) => {
+    let dateA = new Date(a.replace(/(\d+)-(\w+)-(\d+)/, "$2 $1 $3"));
+    let dateB = new Date(b.replace(/(\d+)-(\w+)-(\d+)/, "$2 $1 $3"));
+    return dateA - dateB;
+  });
+
+  // return res.data;
 }
 
 onMounted(async () => {
-  data.value = await getData();
+  await getData();
 });
 </script>
 
@@ -68,16 +76,17 @@ onMounted(async () => {
     style="max-height: 30vh"
   >
     <q-item
-      v-for="(v, i) in data"
+      v-for="v in data"
       class="q-py-none outlined"
       clickable
       @click="
         () => {
           modal = true;
           listTime = {
-            date: date2Thai(i, true),
-            data: Object.entries(v),
+            date: date2Thai(v.date, truea),
+            data: v.data,
           };
+
           avgTemp = 0;
           listTime.data.forEach((v) => (avgTemp += v[1]));
           avgTemp = avgTemp / listTime.data.length;
@@ -85,7 +94,7 @@ onMounted(async () => {
       "
       v-ripple
     >
-      <q-item-section>{{ date2Thai(i, true) }}</q-item-section>
+      <q-item-section>{{ date2Thai(v.date, true) }}</q-item-section>
       <q-item-section avatar>
         <q-icon flat round color="grey" name="zoom_in" />
       </q-item-section>
@@ -134,6 +143,8 @@ onMounted(async () => {
 <style scoped>
 .my-card {
   min-height: 250px;
+  /* background-color: hsla(0, 0%, 100%, 0.4); */
+
   width: 48%;
 }
 

@@ -11,7 +11,7 @@ const dataInfo = ref();
 const dataInfoOption = ref();
 const temp = ref<number[]>([]);
 const time = ref<string[]>([]);
-
+const randomColor = ref<string>();
 const day = ref();
 
 // const data = ref({
@@ -42,15 +42,27 @@ const config = ref({
   options: {},
 });
 
+function getRandomColor() {
+  const hue = Math.floor(Math.random() * 360); // สุ่มค่า hue (เฉดสี) ระหว่าง 0-360
+  const saturation = 70 + Math.random() * 30; // กำหนดค่า saturation ให้อยู่ในช่วง 70-100% เพื่อให้สีสด
+  const lightness = 50 + Math.random() * 10; // กำหนดค่า lightness ให้อยู่ในช่วง 50-60% เพื่อให้สว่าง
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
 async function getData() {
   const res = await axios.get(
     "https://limitedcocoa-default-rtdb.firebaseio.com/.json"
   );
+
   dataInfo.value = Object.entries(res.data).map((v) => ({
-    date: date2Thai(new Date(v[0]).toDateString(), true),
+    date: new Date(v[0]).toDateString(),
     data: Object.entries(v[1]),
   }));
-  dataInfoOption.value = dataInfo.value.map((v) => v.date);
+  dataInfo.value = dataInfo.value.sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+
+  dataInfoOption.value = dataInfo.value.map((v) => date2Thai(v.date, true));
   return res.data;
 }
 
@@ -69,10 +81,11 @@ function calGraph(selectedDay: string) {
     chartInstance.value.destroy();
   }
 
+  randomColor.value = getRandomColor();
   temp.value = [];
   time.value = [];
   dataInfo.value.forEach((v) => {
-    if (v.date === selectedDay) {
+    if (date2Thai(v.date, true) === selectedDay) {
       v.data.forEach((x) => {
         temp.value.push(x[1]);
         time.value.push(x[0]);
@@ -90,11 +103,14 @@ function calGraph(selectedDay: string) {
       type: "line" as const,
       data: {
         labels: time.value,
+
         datasets: [
           {
             label: "อุณหภูมิ",
-            backgroundColor: "rgb(255, 99, 132)",
-            borderColor: "rgb(255, 99 ,132)",
+            backgroundColor: randomColor.value,
+            borderColor: randomColor.value,
+            // backgroundColor: "rgb(255, 99, 132)",
+            // borderColor: "rgb(255, 99 ,132)",
             data: temp.value.concat([30, 40]),
           },
         ],
