@@ -83,7 +83,7 @@ onMounted(async () => {
         () => {
           modal = true;
           listTime = {
-            date: date2Thai(v.date, truea),
+            date: date2Thai(v.date, true),
             data: v.data,
           };
 
